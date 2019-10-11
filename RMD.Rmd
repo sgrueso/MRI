@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+author: "Sergio Grueso"
+date: "11/10/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1, sample.kind = "Rounding")
+data <- read.csv("../MRI/oasis_longitudinal.csv", header = TRUE, stringsAsFactors = FALSE)
+set.seed(1, sample.kind = "Rounding")
+data_cross <- read.csv("../MRI/oasis_cross-sectional.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
