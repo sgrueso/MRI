@@ -1,0 +1,190 @@
+---
+title: "Untitled"
+author: "Sergio Grueso"
+date: "11/10/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# 
+
+# Download al load the libraries and data of the longitudinal and cross sectional studies (cross sectional study will not be used for now).
+
+```{r}
+library(tidyverse)
+library(dslabs)
+library(dbplyr)
+library(ggplot2)
+
+set.seed(1, sample.kind = "Rounding")
+longitudinal <- read.csv("../MRI/oasis_longitudinal.csv", header = TRUE, stringsAsFactors = FALSE)
+set.seed(1, sample.kind = "Rounding")
+cross <- read.csv("../MRI/oasis_cross-sectional.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+
+# Summary of the longitudinal dataset
+
+```{r}
+str(data)
+
+summary(longitudinal)
+```
+
+
+## Data analysis:
+
+# Hand variable is not relevant because it has the same values for all subjects. Hand is droped.
+
+
+```{r}
+longitudinal$Hand <- NULL
+```
+
+# M.F variable name is changed to "Sex" to be more descriptive
+
+
+```{r}
+names(longitudinal)[names(longitudinal) == "M.F"] <- "Sex"
+```
+
+
+# Quick easy search for null values
+
+```{r}
+sum(is.na(longitudinal))
+```
+
+# 19 observations have one missing value from SES variable and 2 observations have missing values from SES and MMSE column. Subjects with 2 missing values are dropped and any missing value is replaced by the median of that variable. Median is used instead of mean because SES is a variable with integer values from 1 to 5 that indicates socioeconomical status and we do not want decimals values.
+
+```{r}
+ind <- which(is.na(longitudinal$MMSE))
+longitudinal <- longitudinal[-ind, ]
+
+ind <- which(is.na(longitudinal$SES))
+longitudinal$SES[ind] <- median(longitudinal$SES[-ind])
+```
+
+# Group variable is the variable we will want to predict so demented is changed to 1 and nondemented to 0. This is in order to facilitate predictions, if the algorithm predicts anything greater than 0.5 (>0.5) the prediction will be "1" meaning that pacient has or is in risk of Alzheimer.
+
+```{r}
+longitudinal$Group <- ifelse(longitudinal$Group=="Demented", 1, 0)
+```
+
+
+## Data visualization
+# Data visualization analysis can be started by observing the Group, Age and Sex distribution
+
+```{r}
+longitudinal %>% ggplot(aes(Group, Age, fill= Sex)) +
+    geom_boxplot()
+```
+
+# Results on the test MMSE plotted against Age and colored depending on the Group.
+
+```{r}
+longitudinal %>% ggplot(aes(Age, MMSE, col = Group)) +
+    geom_point()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
