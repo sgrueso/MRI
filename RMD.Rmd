@@ -11,15 +11,26 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <<<<<<< HEAD
 
-# 
 
-# Download al load the libraries and data of the longitudinal and cross sectional studies (cross sectional study will not be used for now).
+# Index:
+# - Intro
+# - Method: 
+#   1) Data analysis and visualization 
+#   2) Moddeling Aproach
+# - Results: summary of all the accuracies
+# - Conclusions: 
+
+
+
+# Download al load the libraries and data of the longitudinal and cross sectional studies (cross sectional study will only be used as a test set). All can be found in https://github.com/sgrueso/MRI.git.
 
 ```{r}
-library(tidyverse)
-library(dslabs)
-library(dbplyr)
-library(ggplot2)
+if(!require(tidyverse)) install.packages("tidyverse")
+if(!require(caret)) install.packages("caret")
+if(!require(dslabs)) install.packages("dslabs")
+if(!require(dbplyr)) install.packages("dbplyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(Rborist)) install.packages("Rborist")
 
 set.seed(1, sample.kind = "Rounding")
 longitudinal <- read.csv("../MRI/oasis_longitudinal.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -74,16 +85,39 @@ longitudinal$SES[ind] <- median(longitudinal$SES[-ind])
 
 ```{r}
 longitudinal$Group <- ifelse(longitudinal$Group=="Demented", 1, 0)
+longitudinal$Group <- as.factor(longitudinal$Group)
 ```
+
+# correlations between variables
+
+```{r}
+longitudinal %>% select(MR.Delay, Age, EDUC, MMSE, CDR, eTIV, nWBV, ASF) %>% cor()
+```
+
+# (*** NO EN EDX ***) ASF is the computed scaling factor that transforms native-space brain and skull to the atlas target (i.e., the determinant of the transform matrix) and eTIV (estimated total intracranial volume in cm3) is the automated estimate of total intracranial volume in native space derived from the ASF (Buckner et al. 2004). That is why both variables are so highly correlated.
+
+# Other significanly correlated (c < 0.20) variables are: 
+#     - Age and MR.Delay
+#     - Age and nWBV
+#     - Education with eTIV and ASF
+#     - nWBV with eTIV and ASF
+#     - CDR and MMSE
+# (*** NO EN EDX ***) 
 
 
 ## Data visualization
 # Data visualization analysis can be started by observing the Group, Age and Sex distribution
 
 ```{r}
-longitudinal %>% ggplot(aes(Group, Age, fill= Sex)) +
+longitudinal %>% ggplot(aes(Sex, Age, fill= Group)) +
     geom_boxplot()
 ```
+
+```{r}
+longitudinal %>% ggplot(aes(Group, Age, fill = Group)) +
+    geom_boxplot()
+```
+
 
 # Results on the test MMSE plotted against Age and colored depending on the Group.
 
@@ -92,10 +126,77 @@ longitudinal %>% ggplot(aes(Age, MMSE, col = Group)) +
     geom_point()
 ```
 
-#
+# Comparison between Eductaion and Group
+
+```{r}
+longitudinal %>% ggplot(aes(Group, EDUC, fill = Group)) + geom_boxplot()
+```
+
+
+# SES vs Group
+
+```{r}
+longitudinal %>% ggplot(aes(Group, SES, fill = Group)) + geom_boxplot()
+```
+
+
+# As previous plots have shown, Education and MMSE have a negative correlation with Dementia. Therefore a final plot of MMSE against education is suggested with the expectation to find a positive correlation bewtween these 2 variables, and also, independently of the value in the variables Sex and Group.
+
+```{r}
+longitudinal %>% ggplot(aes(EDUC, MMSE, col = Group)) + geom_smooth(method = "lm", se = FALSE) + facet_wrap(~Sex)
+```
+
+
+# BUILDING THE MODEL
+
+# Train and test set partitions are made:
+
+```{r}
+set.seed(1, sample.kind="Rounding")
+
+test_index <- createDataPartition(y = longitudinal$Group, times = 1, p = 0.2, list = FALSE)
+train_set <- longitudinal[-test_index,]
+test_set  <- longitudinal[test_index,]
+```
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# classic trainning
+
+# ```{r}
+train_rf_2 <- train(y ~ .,
+      method = "Rborist",
+      tuneGrid = data.frame(predFixed = 2, minNode = c(3, 50)),
+      data = mnist_27$train)
+confusionMatrix(predict(train_rf_2, mnist_27$test), mnist_27$test$y)$overall["Accuracy"]
+``` #
 
 
 
