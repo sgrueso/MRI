@@ -74,6 +74,7 @@ longitudinal$SES[ind] <- median(longitudinal$SES[-ind])
 
 ```{r}
 longitudinal$Group <- ifelse(longitudinal$Group=="Demented", 1, 0)
+longitudinal$Group <- as.factor(longitudinal$Group)
 ```
 
 
@@ -81,7 +82,7 @@ longitudinal$Group <- ifelse(longitudinal$Group=="Demented", 1, 0)
 # Data visualization analysis can be started by observing the Group, Age and Sex distribution
 
 ```{r}
-longitudinal %>% ggplot(aes(Group, Age, fill= Sex)) +
+longitudinal %>% ggplot(aes(Sex, Age, fill= Group)) +
     geom_boxplot()
 ```
 
@@ -92,12 +93,29 @@ longitudinal %>% ggplot(aes(Age, MMSE, col = Group)) +
     geom_point()
 ```
 
-#
+# Comparison between Eductaion and Group
+```{r}
+longitudinal %>% ggplot(aes(Group, EDUC, fill = Group)) + geom_boxplot()
+```
 
 
+# SES vs 
+
+```{r}
+longitudinal %>% ggplot(aes(Group, SES, fill = Group)) + geom_boxplot()
+```
 
 
+# correlations between variables
 
+```{r}
+longitudinal %>% select(MR.Delay, Age, EDUC, MMSE, eTIV, nWBV, ASF) %>% cor()
+```
+
+# ASF == Atlas Scaling Factor (unitless). Computed scaling factor that transforms native-space brain and skull to the atlas target (i.e., the determinant of the transform matrix).
+# eTIV == Estimated total intracranial volume (cm3). Automated estimate of total intracranial volume in native space derived from the ASF.
+
+# That is why both variables are so highly correlated
 
 
 
