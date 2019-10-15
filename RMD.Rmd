@@ -159,35 +159,6 @@ train_set <- longitudinal[-test_index,]
 test_set  <- longitudinal[test_index,]
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # classic trainning
 
 # ```{r}
