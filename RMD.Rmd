@@ -31,6 +31,7 @@ if(!require(dslabs)) install.packages("dslabs")
 if(!require(dbplyr)) install.packages("dbplyr")
 if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(Rborist)) install.packages("Rborist")
+if(!require(randomForest)) install.packages("randomForest")
 
 set.seed(1, sample.kind = "Rounding")
 longitudinal <- read.csv("../MRI/oasis_longitudinal.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -181,7 +182,7 @@ train_rf <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
 
 pred_rf <- predict(train_rf, test_set)
 
-acc_rf <- mean(pred == test_set$Group)
+acc_rf <- mean(pred_rf == test_set$Group)
 
 acc_rf
 ```
