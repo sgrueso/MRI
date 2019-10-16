@@ -159,17 +159,48 @@ train_set <- longitudinal[-test_index,]
 test_set  <- longitudinal[test_index,]
 ```
 
-# classic trainning
+# Naive Baseline Model:
 
-# ```{r}
-train_rf_2 <- train(y ~ .,
-      method = "Rborist",
-      tuneGrid = data.frame(predFixed = 2, minNode = c(3, 50)),
-      data = mnist_27$train)
-confusionMatrix(predict(train_rf_2, mnist_27$test), mnist_27$test$y)$overall["Accuracy"]
-``` #
+# The obvious way of predicting dementia seems to be MMSE. A value lower or equal than 27 predicts dementia.
 
+```{r}
+y_hat <- ifelse(test_set$MMSE <= 27, 1, 0)
 
+mean(y_hat == test_set$Group)
+```
+
+# The model has a 0.84 accuracy with only one parameter, that is unsual and very high accuracy. But can I improve the accuracy if the model includes more parameters like Age, Education or Social Economic Status?. The variables that seem 
+
+# First we can try Random Forest.
+
+```{r}
+
+train_rf <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
+               method = "rf",
+               data = train_set)
+
+pred_rf <- predict(train_rf, test_set)
+
+acc_rf <- mean(pred == test_set$Group)
+
+acc_rf
+```
+
+# Another model is 
+
+```{r}
+train_rf <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
+               method = "Rborist",
+               data = train_set)
+
+pred_rf <- predict(train_rf, test_set)
+
+acc_rf <- mean(pred == test_set$Group)
+
+acc_rf
+```
+
+  
 
 
 
