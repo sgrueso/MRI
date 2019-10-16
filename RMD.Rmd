@@ -85,6 +85,7 @@ longitudinal$SES[ind] <- median(longitudinal$SES[-ind])
 ```{r}
 longitudinal$Group <- ifelse(longitudinal$Group=="Demented", 1, 0)
 longitudinal$Group <- as.factor(longitudinal$Group)
+
 ```
 
 # correlations between variables
@@ -196,6 +197,7 @@ confusionMatrix(predict(model2, test_set), test_set$Group)$overall["Accuracy"]
 
 # Indeed, more variables improve the model. 
 # Other algorith are tested, for example Random Forest. We get a better accuracy than just MMSE model and glm.
+
 
 
 ```{r}
