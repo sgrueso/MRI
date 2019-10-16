@@ -175,15 +175,11 @@ mean(y_hat == test_set$Group)
 ```{r}
 set.seed(1, sample.kind="Rounding")
 
-model_1 <- train(Group ~ Age + EDUC + MMSE,
+model1 <- train(Group ~ Age + EDUC + MMSE,
                  method = "glm",
                  data = train_set)
 
-pred1 <- predict(model_1, test_set)
-
-acc1 <- mean(pred1 == test_set$Group)
-
-acc1
+confusionMatrix(predict(model1, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
 # The model is improved by adding both variables. Can more variables improve more the accurac?
@@ -191,15 +187,11 @@ acc1
 ```{r}
 set.seed(1, sample.kind="Rounding")
 
-model_2 <- train(Group ~ Age + EDUC + MMSE + SES + eTIV + nWBV,
+model2 <- train(Group ~ Age + EDUC + MMSE + SES + eTIV + nWBV,
                  method = "glm",
                  data = train_set)
 
-pred2 <- predict(model_2, test_set)
-
-acc2 <- mean(pred2 == test_set$Group)
-
-acc2
+confusionMatrix(predict(model2, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
 # Indeed, more variables improve the model. 
@@ -209,19 +201,18 @@ acc2
 ```{r}
 set.seed(1, sample.kind="Rounding")
 
-train_rf <- train(Group ~ Age + EDUC + MMSE + SES + eTIV + nWBV,
+model3 <- train(Group ~ Age + EDUC + MMSE + SES + eTIV + nWBV,
                method = "rf",
                data = train_set)
 
-pred_rf <- predict(train_rf, test_set)
-
-acc_rf <- mean(pred_rf == test_set$Group)
-
-acc_rf
-
-# varImp(train_rf)
+confusionMatrix(predict(model3, test_set), test_set$Group)$overall["Accuracy"]
 
 ```
+
+```{r}
+plot(varImp(model3))
+```
+
 
 
 
@@ -230,22 +221,15 @@ acc_rf
 ```{r}
 set.seed(1, sample.kind="Rounding")
 
-train_knn <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
+model4 <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
                method = "knn",
                tuneGrid = data.frame(k = seq(1, 20, 1)),
                data = train_set)
-confusionMatrix(predict(train_knn, test_set), test_set$Group)$overall["Accuracy"]
-
-train_knn$bestTune
+plot(model4)
 ```
 
-
-
-
-
-
-
-
-
+```{r}
+confusionMatrix(predict(train_knn, test_set), test_set$Group)$overall["Accuracy"]
+```
 
 
