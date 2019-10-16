@@ -229,7 +229,7 @@ plot(model4)
 ```
 
 ```{r}
-confusionMatrix(predict(train_knn, test_set), test_set$Group)$overall["Accuracy"]
+confusionMatrix(predict(model4, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
 
