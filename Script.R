@@ -156,5 +156,13 @@ model4 <- train(Group ~ MR.Delay + Age + EDUC + MMSE + SES + eTIV + nWBV,
 plot(model4)
 confusionMatrix(predict(model4, test_set), test_set$Group)$overall["Accuracy"]
 
+# MODEL NAME	              ACCURACY
+# KNN	                      0.627
+# MMSE	                    0.840
+# GLM (MMSE + Age + EDUC)	  0.867
+# GLM (6 Variables)	        0.880
+# Random Forest	            0.893
+
+
 # With Random Forest nearly 9/10 subjects with Alzheimer are spotted. MMSE seems to be the best variable to predict Alzheimer but the accuracy of the MMSE test is improved by adding to the model MR.Delay, SES, eTIV and nWBV variables. 
 # Alzheimer and any type of dementia are complex neurodegenerative diseases that involve more than one factor. Algorithms can provide valuable information, especially for detecting high risk patients, but diagnoses must be based on clinical expert opinions.

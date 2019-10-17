@@ -14,17 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 <<<<<<< HEAD
 
 
-# Index:
-# - Intro
-# - Method: 
-#   1) Data analysis and visualization 
-#   2) Moddeling Aproach
-# - Results: summary of all the accuracies
-# - Conclusions: 
 
-
-
-# Download al load the libraries and data of the longitudinal and cross sectional studies (cross sectional study will only be used as a test set). All can be found in https://github.com/sgrueso/MRI.git.
+# The dataset consists on longitudinal collection of 150 subjects aged 60 to 96. Each subject was scanned on two or more visits, separated by at least one year for a total of 373 imaging sessions. For each subject, 3 or 4 individual T1-weighted MRI scans obtained in single scan sessions are included (for more information visit https://www.kaggle.com/ jboy sen/mri-and-alzheimers). First all the libraries and the longitudinal dataset that will be used are downloaded. All can be found in https://github.com/sgrueso/MRI.git
 
 ```{r}
 if(!require(tidyverse)) install.packages("tidyverse")
@@ -40,7 +31,16 @@ longitudinal <- read.csv("../MRI/oasis_longitudinal.csv", header = TRUE, strings
 ```
 
 
-# Summary of the longitudinal dataset
+# Here is a summary of the longitudinal dataset and a description of the variables that may have confusing names:
+# - EDUC: years of education
+# - SES: Socio-economic state
+# - ASF: computed scaling factor that transforms native-space brain and skull to the atlas target (i.e., the determinant of the transform matrix)
+# - eTIV: estimated total intracranial volume (in cm3). Is the automated estimate of total intracranial volume in native space derived from the ASF
+# -	MMSE: Mini-Mental State Exam. Is a test used to identify dementia
+# - CDR: Also a test to identify dementia
+# - nWBV: Normalized whole-brain volume (%) Automated tissue segmentation based estimate of brain volume (gray-plus white-matter). 
+
+
 
 ```{r}
 str(data)
@@ -48,10 +48,9 @@ str(data)
 summary(longitudinal)
 ```
 
+# Data Analysis
 
-## Data analysis:
-
-# Hand variable is not relevant because it has the same values for all subjects. Hand is droped.
+# The analysis is started by removing Hand variable. As said in the description every subject is right handed an therefore it is not relevant to keep this variable.
 
 
 ```{r}
@@ -72,7 +71,7 @@ names(longitudinal)[names(longitudinal) == "M.F"] <- "Sex"
 sum(is.na(longitudinal))
 ```
 
-# 19 observations have one missing value from SES variable and 2 observations have missing values from SES and MMSE column. Subjects with 2 missing values are dropped and any missing value is replaced by the median of that variable. Median is used instead of mean because SES is a variable with integer values from 1 to 5 that indicates socioeconomical status and we do not want decimals values.
+# 19 observations have one missing value from SES variable and 2 observations have missing values from SES and MMSE column. Subjects with 2 missing values are dropped and any missing value is replaced by the median of that variable. Median is used instead of mean because SES is a variable with integer values from 1 to 5 that indicates socioeconomic status and we do not want decimals values.
 
 ```{r}
 ind <- which(is.na(longitudinal$MMSE))
@@ -90,25 +89,15 @@ longitudinal$Group <- as.factor(longitudinal$Group)
 
 ```
 
-# correlations between variables
+# correlations between variables are displayed
 
 ```{r}
 longitudinal %>% select(MR.Delay, Age, EDUC, MMSE, CDR, eTIV, nWBV, ASF) %>% cor()
 ```
 
-# (*** NO EN EDX ***) ASF is the computed scaling factor that transforms native-space brain and skull to the atlas target (i.e., the determinant of the transform matrix) and eTIV (estimated total intracranial volume in cm3) is the automated estimate of total intracranial volume in native space derived from the ASF (Buckner et al. 2004). That is why both variables are so highly correlated.
-
-# Other significanly correlated (c < 0.20) variables are: 
-#     - Age and MR.Delay
-#     - Age and nWBV
-#     - Education with eTIV and ASF
-#     - nWBV with eTIV and ASF
-#     - CDR and MMSE
-# (*** NO EN EDX ***) 
-
 
 ## Data visualization
-# Data visualization analysis can be started by observing the Group, Age and Sex distribution
+# Data visualization analysis can be started by observing Age and Sex distribution separated by Group variable:
 
 ```{r}
 longitudinal %>% ggplot(aes(Sex, Age, fill= Group)) +
@@ -135,7 +124,7 @@ longitudinal %>% ggplot(aes(Group, EDUC, fill = Group)) + geom_boxplot()
 ```
 
 
-# SES vs Group
+# Comparison between SES and Group is also made:
 
 ```{r}
 longitudinal %>% ggplot(aes(Group, SES, fill = Group)) + geom_boxplot()
@@ -147,6 +136,10 @@ longitudinal %>% ggplot(aes(Group, SES, fill = Group)) + geom_boxplot()
 ```{r}
 longitudinal %>% ggplot(aes(EDUC, MMSE, col = Group)) + geom_smooth(method = "lm", se = FALSE) + facet_wrap(~Sex)
 ```
+
+# In summary, patients with Alzheimer (dementia) compared with non-demented subjects; tend to be less educated, in a lower social economic status and with lower punctuations in MMSE.
+# Age is normally the principal risk factor but in this study the mean age of the group with dementia is actually lower. That’s probably because the expectancy of life in people with dementia is much lower. Therefore we do not see a lot of people arriving to mid or late 90s when suffering Alzheimer’s disease. 
+
 
 
 # BUILDING THE MODEL
@@ -163,7 +156,7 @@ test_set  <- longitudinal[test_index,]
 
 # Naive Baseline Model:
 
-# The obvious way of predicting dementia seems to be MMSE. A value lower or equal than 27 predicts dementia.
+# The obvious way of predicting dementia seems to be MMSE. According to MMSE test manual, a value lower or equal than 27 is considered low enough to predict dementia. The model has a 0.84 accuracy with only one parameter. But can I improve the accuracy if the model includes more parameters like Age, Education or Social Economic Status?
 
 ```{r}
 y_hat <- ifelse(test_set$MMSE <= 27, 1, 0)
@@ -171,9 +164,9 @@ y_hat <- ifelse(test_set$MMSE <= 27, 1, 0)
 mean(y_hat == test_set$Group)
 ```
 
-# The model has a 0.84 accuracy with only one parameter, that is unsual and very high accuracy. But can I improve the accuracy if the model includes more parameters like Age, Education or Social Economic Status?. 
+# GLM
 
-# MMSE is a test and includes scales that have into account Age and level of education of the subject. That is represented in our study in the variables Age and EDUC so the next model must include both variables.
+# MMSE is a test and includes scales that have into account age and level of education of the subject. That is represented in our study in the variables Age and EDUC so the next model must include both variables. A General Regression Model is used to train our model.
 
 ```{r}
 set.seed(1, sample.kind="Rounding")
@@ -185,7 +178,7 @@ model1 <- train(Group ~ Age + EDUC + MMSE,
 confusionMatrix(predict(model1, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
-# The model is improved by adding both variables. Can more variables improve more the accurac?
+# The model is improved by adding both variables. Can more variables improve more the accuracy? The variables selected are the ones that do not have very high correlation between each other and that are relevant to consider if a subject has dementia (for exam-ple Subject.ID or MRI.ID are not selected). Indeed, more variables improve the model.
 
 ```{r}
 set.seed(1, sample.kind="Rounding")
@@ -197,8 +190,9 @@ model2 <- train(Group ~ Age + EDUC + MMSE + SES + eTIV + nWBV,
 confusionMatrix(predict(model2, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
-# Indeed, more variables improve the model. 
-# Other algorith are tested, for example Random Forest. We get a better accuracy than just MMSE model and glm.
+
+# RANDOM FOREST
+# Random forest seems more useful with 6 predictors and therefore is used to train the model. We get a better accuracy than just MMSE model and glm and variable importance is shown.
 
 
 
@@ -218,8 +212,6 @@ plot(varImp(model3))
 ```
 
 
-
-
 # Another algorithm is KNN but the accuracy is only 0.627 with k = 7 as best "k".
 
 ```{r}
@@ -236,4 +228,13 @@ plot(model4)
 confusionMatrix(predict(model4, test_set), test_set$Group)$overall["Accuracy"]
 ```
 
+# MODEL NAME	              ACCURACY
+# KNN	                      0.627
+# MMSE	                    0.840
+# GLM (MMSE + Age + EDUC)	  0.867
+# GLM (6 Variables)	        0.880
+# Random Forest	            0.893
+
+# With Random Forest nearly 9/10 subjects with Alzheimer are spotted. MMSE seems to be the best variable to predict Alzheimer but the accuracy of the MMSE test is improved by adding to the model MR.Delay, SES, eTIV and nWBV variables. 
+# Alzheimer and any type of dementia are complex neurodegenerative diseases that involve more than one factor. Algorithms can provide valuable information, especially for detecting high risk patients, but diagnoses must be based on clinical expert opinions.
 
